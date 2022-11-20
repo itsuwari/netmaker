@@ -88,7 +88,6 @@ func SetPeers(iface string, node *models.Node, peers []wgtypes.PeerConfig) error
 			shouldDelete := true
 			if len(peers) > 0 {
 				for _, peer := range peers {
-
 					if len(peer.AllowedIPs) > 0 && len(currentPeer.AllowedIPs) > 0 &&
 						peer.AllowedIPs[0].String() == currentPeer.AllowedIPs[0].String() {
 						shouldDelete = false
@@ -202,7 +201,9 @@ func InitWireguard(node *models.Node, privkey string, peers []wgtypes.PeerConfig
 	if node.Address != "" {
 		_, cidr, cidrErr := net.ParseCIDR(node.NetworkSettings.AddressRange)
 		if cidrErr == nil {
-			local.SetCIDRRoute(ifacename, node.Address, cidr)
+			if node.Table != "off" {
+				local.SetCIDRRoute(ifacename, node.Address, cidr)
+			}
 		} else {
 			logger.Log(1, "could not set cidr route properly: ", cidrErr.Error())
 		}
@@ -212,7 +213,9 @@ func InitWireguard(node *models.Node, privkey string, peers []wgtypes.PeerConfig
 		//ipv6
 		_, cidr, cidrErr := net.ParseCIDR(node.NetworkSettings.AddressRange6)
 		if cidrErr == nil {
-			local.SetCIDRRoute(ifacename, node.Address6, cidr)
+			if node.Table != "off" {
+				local.SetCIDRRoute(ifacename, node.Address, cidr)
+			}
 		} else {
 			logger.Log(1, "could not set cidr route properly: ", cidrErr.Error())
 		}
@@ -358,6 +361,10 @@ func WriteWgConfig(node *models.Node, privateKey string, peers []wgtypes.PeerCon
 	if node.MTU != 0 {
 		wireguard.Section(section_interface).Key("MTU").SetValue(strconv.FormatInt(int64(node.MTU), 10))
 	}
+	wireguard.Section(section_interface).Key("Table").SetValue("on")
+	if node.Table == "off" {
+		wireguard.Section(section_interface).Key("Table").SetValue("off")
+	}
 	for i, peer := range peers {
 		wireguard.SectionWithIndex(section_peers, i).Key("PublicKey").SetValue(peer.PublicKey.String())
 		if peer.PresharedKey != nil {
@@ -389,7 +396,7 @@ func WriteWgConfig(node *models.Node, privateKey string, peers []wgtypes.PeerCon
 }
 
 // UpdateWgPeers - updates the peers of a network
-func UpdateWgPeers(file string, peers []wgtypes.PeerConfig) (*net.UDPAddr, error) {
+func UpdateWgPeers(file string, peers []wgtypes.PeerConfig, table string) (*net.UDPAddr, error) {
 	var internetGateway *net.UDPAddr
 	options := ini.LoadOptions{
 		AllowNonUniqueSections: true,
@@ -416,7 +423,7 @@ func UpdateWgPeers(file string, peers []wgtypes.PeerConfig) (*net.UDPAddr, error
 				}
 			}
 			wireguard.SectionWithIndex(section_peers, i).Key("AllowedIps").SetValue(allowedIPs)
-			if strings.Contains(allowedIPs, "0.0.0.0/0") || strings.Contains(allowedIPs, "::/0") {
+			if table != "off" && (strings.Contains(allowedIPs, "0.0.0.0/0") || strings.Contains(allowedIPs, "::/0")) {
 				internetGateway = peer.Endpoint
 			}
 		}
@@ -461,6 +468,9 @@ func UpdateWgInterface(file, privateKey, nameserver string, node models.Node) er
 	//	wireguard.Section(section_interface).Key("DNS").SetValue(nameserver)
 	//}
 	//need to split postup/postdown because ini lib adds a quotes which breaks freebsd
+	if node.Table == "off" {
+		wireguard.Section(section_interface).Key("Table").SetValue("off")
+	}
 	if node.PostUp != "" {
 		if node.OS == "freebsd" {
 			parts := strings.Split(node.PostUp, " ; ")

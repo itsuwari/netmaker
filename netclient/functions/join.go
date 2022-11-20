@@ -286,6 +286,9 @@ func JoinNetwork(cfg *config.ClientConfig, privateKey string) error {
 		}
 	}
 
+	if cfg.Node.Table == "" {
+		cfg.Node.Table = "on" //default on
+	}
 	// make sure name is appropriate, if not, give blank name
 	cfg.Node.Name = formatName(cfg.Node)
 	cfg.Node.OS = runtime.GOOS

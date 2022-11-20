@@ -196,6 +196,12 @@ func GetFlags(hostname string) []cli.Flag {
 			Usage:   "Installs daemon if 'on'. Ignores if 'off'. On by default.",
 		},
 		&cli.StringFlag{
+			Name:    "table",
+			EnvVars: []string{"NETCLIENT_TABLE"},
+			Value:   "on",
+			Usage:   "Install routing table if 'on', only install peers if 'off'. On by default",
+		},
+		&cli.StringFlag{
 			Name:    "roaming",
 			EnvVars: []string{"NETCLIENT_ROAMING"},
 			Value:   "yes",

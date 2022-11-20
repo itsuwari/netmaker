@@ -89,6 +89,7 @@ type Node struct {
 	IsStatic        string      `json:"isstatic" bson:"isstatic" yaml:"isstatic" validate:"checkyesorno"`
 	UDPHolePunch    string      `json:"udpholepunch" bson:"udpholepunch" yaml:"udpholepunch" validate:"checkyesorno"`
 	DNSOn           string      `json:"dnson" bson:"dnson" yaml:"dnson" validate:"checkyesorno"`
+	Table           string      `json:"table" bson:"table" yaml:"table"`
 	IsServer        string      `json:"isserver" bson:"isserver" yaml:"isserver" validate:"checkyesorno"`
 	Action          string      `json:"action" bson:"action" yaml:"action"`
 	IsLocal         string      `json:"islocal" bson:"islocal" yaml:"islocal" validate:"checkyesorno"`

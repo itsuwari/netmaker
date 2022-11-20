@@ -206,7 +206,7 @@ func UpdatePeers(client mqtt.Client, msg mqtt.Message) {
 		config.Write(&cfg, cfg.Network)
 	}
 	file := ncutils.GetNetclientPathSpecific() + cfg.Node.Interface + ".conf"
-	internetGateway, err := wireguard.UpdateWgPeers(file, peerUpdate.Peers)
+	internetGateway, err := wireguard.UpdateWgPeers(file, peerUpdate.Peers, cfg.Table)
 	if err != nil {
 		logger.Log(0, "error updating wireguard peers"+err.Error())
 		return
