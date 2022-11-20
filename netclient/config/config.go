@@ -279,7 +279,6 @@ func GetCLIConfig(c *cli.Context) (ClientConfig, string, error) {
 	cfg.Node.IPForwarding = c.String("ipforwarding")
 	cfg.OperatingSystem = c.String("operatingsystem")
 	cfg.Daemon = c.String("daemon")
-	cfg.Table = c.String("table")
 	cfg.Node.Table = c.String("table")
 	cfg.Node.UDPHolePunch = c.String("udpholepunch")
 	cfg.Node.MTU = int32(c.Int("mtu"))
